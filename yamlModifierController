@@ -1,0 +1,156 @@
+package com.example.yamlmodifier;
+
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
+@RestController
+@RequestMapping("/config")
+public class YamlModifierController {
+
+    String filePath = "src/main/resources/application.yml";
+
+    @PutMapping("/modify")
+    public ResponseEntity<String> modifyYaml(@RequestBody ConfigObject configObject) throws IOException {
+
+        String profile = configObject.getProfile();
+        boolean cloneOnStart = configObject.isCloneOnStart();
+
+        // Create a Yaml object
+        Yaml yaml = new Yaml();
+
+        // Load the YAML file
+        File yamlFile = new File(filePath);
+        FileInputStream fis = new FileInputStream(yamlFile);
+
+        // Iterate through the YAML file
+        Iterator<Object> iterator = yaml.loadAll(fis).iterator();
+        while (iterator.hasNext()) {
+            // Get the next object
+            Object object = iterator.next();
+
+            // Check if the object is a map
+            if (object instanceof Map) {
+                // Get the map
+                Map<String, Object> map = (Map<String, Object>) object;
+
+                // Iterate through the map
+                for (String key : map.keySet()) {
+                    // Get the value
+                    if (key.equals("spring")) {
+                        Object value = map.get(key);
+                        if (value instanceof Map) {
+                            Map<String, Object> nestedMap = (Map<String, Object>) object;
+                            for (String nestedKey : nestedMap.keySet()) {
+                                // Get the value
+                                if (nestedKey.equals("cloud")) {
+                                    Object value2 = map.get(key);
+                                    if (value2 instanceof Map) {
+                                        Map<String, Object> nestedMap2 = (Map<String, Object>) object;
+                                        for (String nestedKey2 : nestedMap2.keySet()) {
+                                            if (nestedKey2.equals("git")) {
+                                                Object value3 = map.get(key);
+                                                if (value3 instanceof Map) {
+                                                    Map<String, Object> nestedMap3 = (Map<String, Object>) object;
+                                                    for (String nestedKey3 : nestedMap3.keySet()) {
+                                                        if (nestedKey3.equals("clone-on-start")) {
+                                                            Object value4 = cloneOnStart;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                    /*Object value = map.get(key);
+                    // Print the key and value
+                    System.out.println(key + ": " + value);*/
+                                // Write the YAML file back
+                                FileWriter writer = new FileWriter(yamlFile);
+                                DumperOptions options = new DumperOptions();
+                                options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+                                yaml.dump(object, writer);
+                                writer.close();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Close the file
+        fis.close();
+        return ResponseEntity.status(HttpStatus.CREATED).body("Config file created !!");
+    }
+}
+
+
+
+
+
+
+/*ObjectMapper objectMapper = new YAMLMapper();
+        // read YAML file
+        Map<String, Object> config = objectMapper
+                .readValue(new File("src/main/resources/application.yml"),new TypeReference<Map<String, Object>>() { });
+
+        // modify the address
+        Map<String, Object> cloudConfig = (Map<String, Object>) config.get("git");
+
+        cloudConfig.put("uri", "https://github.com/adilearner/microservices-configuration-server");
+        cloudConfig.put("clone-on-start", "false");
+
+        // write YAML file
+        objectMapper.writeValue(new File("src/main/resources/application.yml"), config);*/
+
+
+/*File fileToBeModified = new File(filePath);
+        StringBuilder oldContent = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileToBeModified))) {
+            String line = reader.readLine();
+            while (line != null) {
+                if (line.contains("clone")) {
+                    String[] chgLine = line.split(":");
+                    chgLine.
+                }
+            }*/
+
+/*// Read the YAML file
+        File yamlFile = new File(filePath);
+        FileReader reader = new FileReader(yamlFile);
+        Yaml yaml = new Yaml();
+        LinkedHashMap data = yaml.load(reader);
+
+        //Find the placeholder
+        Set<String> keys = data.keySet();
+
+        for(String key : keys) {
+            if(key.equals("clone-on-start")){
+                data.get(key)
+            }
+            *//*System.out.println(key + " -- "
+                    + data.get(key));*//*
+        }
+
+        // Replace the value
+        data.put("profile", "qa");
+        data.put("clone-on-start","false");
+
+
+        // Write the YAML file back
+        FileWriter writer = new FileWriter(yamlFile);
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        yaml.dump(data, writer);
+        writer.close();
+        return ResponseEntity.status(HttpStatus.CREATED).body("Config file created !!");
+        }*/
